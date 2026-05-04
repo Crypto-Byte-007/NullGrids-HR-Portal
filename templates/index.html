@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NullGrids HR Portal | Secure Internal Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #05070a;
+            --bg-card: #0d1117;
+            --primary: #00ff88;
+            --primary-glow: rgba(0, 255, 136, 0.3);
+            --secondary: #00d4ff;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+            --error: #ff4b4b;
+            --border: #30363d;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Background effects */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #161b22;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Dashboard Screen */
+        #dashboard-screen {
+            display: none;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--bg-dark);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 32px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Employee Table */
+        .employee-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .employee-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 1fr 100px;
+            align-items: center;
+            padding: 16px;
+            background: #161b22;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .employee-item:hover {
+            border-color: var(--primary);
+            background: #1c2128;
+            transform: translateX(8px);
+        }
+
+        .emp-id {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .emp-name {
+            font-weight: 600;
+        }
+
+        .emp-dept {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        /* Profile Sidebar */
+        .profile-card {
+            position: sticky;
+            top: 40px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            background: #161b22;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .detail-row {
+            margin-bottom: 16px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .secret-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px dashed var(--primary);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .secret-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            word-break: break-all;
+            font-size: 13px;
+        }
+
+        /* System Console */
+        .console-trigger {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .console-trigger:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        #system-console {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            background: #000;
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            display: none;
+            z-index: 100;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .console-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .console-input {
+            flex: 1;
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--primary);
+            padding: 8px;
+            font-family: inherit;
+            border-radius: 4px;
+        }
+
+        .console-btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 0 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .console-output {
+            margin-top: 16px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #00ff88;
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .error-msg { color: var(--error); font-size: 14px; margin-top: 12px; text-align: center; }
+
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .profile-card { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <!-- Login Section -->
+    <section id="login-screen">
+        <div class="login-card">
+            <div class="logo-area">
+                <div class="logo-text">NULLGRIDS</div>
+                <div class="subtitle">HR MANAGEMENT PORTAL v2.4.0</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="auth-token">Internal Access Token</label>
+                <input type="password" id="auth-token" class="input-field" placeholder="tok_xxxxxxxxxxxx" value="tok_alice_1a2b3c">
+            </div>
+
+            <button id="login-btn" class="btn">
+                <span>INITIALIZE SECURE SESSION</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+
+            <div id="login-error" class="error-msg hidden">Invalid credentials provided.</div>
+            
+            <div style="margin-top: 32px; font-size: 12px; color: var(--text-dim); text-align: center;">
+                FOR AUTHORIZED USE ONLY. ALL ACTIVITIES ARE LOGGED.
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard-screen">
+        <header>
+            <div class="logo-text" style="font-size: 24px;">NULLGRIDS</div>
+            <div class="user-info">
+                <div style="text-align: right;">
+                    <div id="current-username" style="font-weight: 600;">Alice</div>
+                    <div id="current-role" style="font-size: 12px; color: var(--text-dim);">Engineer</div>
+                </div>
+                <div class="user-avatar" id="current-avatar">A</div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Side: Directory -->
+            <div class="card">
+                <div class="section-title">Employee Directory</div>
+                <div class="employee-list" id="employee-list">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+            <!-- Right Side: Profile Details -->
+            <div class="card profile-card">
+                <div id="profile-placeholder" style="text-align: center; color: var(--text-dim); padding: 40px 0;">
+                    Select an employee to view details
+                </div>
+                <div id="profile-details" class="hidden">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large" id="det-avatar">?</div>
+                        <h2 id="det-name">User Name</h2>
+                        <p id="det-role" style="color: var(--primary); font-weight: 600; font-size: 14px;">Role</p>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Employee ID</div>
+                        <div class="detail-value emp-id" id="det-id">#00</div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-label">Email Address</div>
+                        <div class="detail-value" id="det-email">user@nullgrids.internal</div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Department</div>
+                        <div class="detail-value" id="det-dept">Infra</div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Internal Notes</div>
+                        <div class="detail-value" id="det-notes" style="font-style: italic; color: var(--text-dim);">...</div>
+                    </div>
+
+                    <div id="det-salary-row" class="detail-row hidden">
+                        <div class="detail-label">Salary</div>
+                        <div class="detail-value" id="det-salary" style="color: #ffd700;">$0</div>
+                    </div>
+
+                    <div id="secret-box" class="secret-box">
+                        <div class="detail-label" style="color: var(--primary);">RESTRICTED DATA FOUND</div>
+                        <div class="secret-value" id="det-secret">FLAG{...}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Console (Floating) -->
+    <div class="console-trigger" id="console-trigger" title="Open System Console">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+    </div>
+
+    <div id="system-console">
+        <div class="console-header">
+            <span>NULLGRIDS TERMINAL v1.0</span>
+            <span id="close-console" style="cursor:pointer;">[X]</span>
+        </div>
+        <div class="console-input-group">
+            <span style="color:var(--primary);">> profile_fetch --id</span>
+            <input type="text" id="manual-id" class="console-input" placeholder="ID">
+            <button id="fetch-btn" class="console-btn">EXEC</button>
+        </div>
+        <div class="console-output" id="console-output">Ready for manual override...</div>
+    </div>
+
+    <script>
+        let currentToken = '';
+
+        const loginBtn = document.getElementById('login-btn');
+        const tokenInput = document.getElementById('auth-token');
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const employeeList = document.getElementById('employee-list');
+        const consoleTrigger = document.getElementById('console-trigger');
+        const systemConsole = document.getElementById('system-console');
+        const consoleOutput = document.getElementById('console-output');
+
+        loginBtn.addEventListener('click', async () => {
+            const token = tokenInput.value.trim();
+            if (!token) return;
+
+            try {
+                const response = await fetch('/api/users', {
+                    headers: { 'X-Auth-Token': token }
+                });
+
+                if (response.ok) {
+                    currentToken = token;
+                    const data = await response.json();
+                    showDashboard(data.employees);
+                    
+                    // Also fetch my own profile to show in header
+                    // We don't know our own ID easily from /api/users listing if it's large,
+                    // but we can try to find ourselves by username if the token has it.
+                    // For this challenge, we'll just assume the first few tokens.
+                    let myId = "1";
+                    if(token.includes("bob")) myId = "2";
+                    if(token.includes("charlie")) myId = "3";
+                    
+                    const myProfileRes = await fetch(`/api/profile/${myId}`, {
+                        headers: { 'X-Auth-Token': token }
+                    });
+                    if(myProfileRes.ok) {
+                        const myData = await myProfileRes.json();
+                        document.getElementById('current-username').textContent = myData.username;
+                        document.getElementById('current-role').textContent = myData.role;
+                        document.getElementById('current-avatar').textContent = myData.username[0].toUpperCase();
+                    }
+
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        function showDashboard(employees) {
+            loginScreen.style.display = 'none';
+            dashboardScreen.style.display = 'block';
+            
+            employeeList.innerHTML = '';
+            employees.forEach(emp => {
+                const item = document.createElement('div');
+                item.className = 'employee-item';
+                item.innerHTML = `
+                    <span class="emp-id">#${emp.id}</span>
+                    <span class="emp-name">${emp.username}</span>
+                    <span class="emp-dept">${emp.department}</span>
+                    <span style="text-align:right;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
+                `;
+                item.onclick = () => fetchProfile(emp.id);
+                employeeList.appendChild(item);
+            });
+        }
+
+        async function fetchProfile(id) {
+            try {
+                const response = await fetch(`/api/profile/${id}`, {
+                    headers: { 'X-Auth-Token': currentToken }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateProfileUI(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function updateProfileUI(data) {
+            document.getElementById('profile-placeholder').classList.add('hidden');
+            document.getElementById('profile-details').classList.remove('hidden');
+            
+            document.getElementById('det-avatar').textContent = data.username[0].toUpperCase();
+            document.getElementById('det-name').textContent = data.username;
+            document.getElementById('det-role').textContent = data.role.toUpperCase();
+            document.getElementById('det-id').textContent = '#' + data.id;
+            document.getElementById('det-email').textContent = data.email;
+            document.getElementById('det-dept').textContent = data.department;
+            document.getElementById('det-notes').textContent = data.internal_notes;
+            
+            if (data.salary) {
+                document.getElementById('det-salary-row').classList.remove('hidden');
+                document.getElementById('det-salary').textContent = '$' + data.salary.toLocaleString();
+            } else {
+                document.getElementById('det-salary-row').classList.add('hidden');
+            }
+
+            if (data.secret) {
+                document.getElementById('secret-box').style.display = 'block';
+                document.getElementById('det-secret').textContent = data.secret;
+            } else {
+                document.getElementById('secret-box').style.display = 'none';
+            }
+        }
+
+        // Console Logic
+        consoleTrigger.onclick = () => {
+            systemConsole.style.display = systemConsole.style.display === 'block' ? 'none' : 'block';
+        };
+
+        document.getElementById('close-console').onclick = () => {
+            systemConsole.style.display = 'none';
+        };
+
+        document.getElementById('fetch-btn').onclick = async () => {
+            const id = document.getElementById('manual-id').value;
+            if (!id) return;
+
+            consoleOutput.textContent = `Connecting to API v2...\nRequesting profile ID: ${id}\nAuthorization: Bearer [REDACTED]\n\n`;
+            
+            try {
+                const response = await fetch(`/api/profile/${id}`, {
+                    headers: { 'X-Auth-Token': currentToken }
+                });
+                const data = await response.json();
+                
+                consoleOutput.textContent += JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    updateProfileUI(data);
+                }
+            } catch (err) {
+                consoleOutput.textContent += "CONNECTION ERROR: System unavailable.";
+            }
+        };
+    </script>
+</body>
+</html>

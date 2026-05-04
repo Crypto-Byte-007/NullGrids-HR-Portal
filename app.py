@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import json, os, uuid
 
 app = Flask(__name__)
@@ -86,20 +86,7 @@ def get_current_user(req):
 
 @app.route("/")
 def index():
-    return """
-    <html><head><title>NullGrids HR Portal</title></head>
-    <body style='font-family:monospace;background:#0a0a0a;color:#00ff88;padding:40px'>
-    <h1>NullGrids HR Portal — API v2</h1>
-    <p>Use your employee token via <code>X-Auth-Token</code> header.</p>
-    <p>Demo tokens (for testing):</p>
-    <ul>
-      <li>Alice (engineer): <code>tok_alice_1a2b3c</code></li>
-      <li>Bob (engineer): <code>tok_bob_4d5e6f</code></li>
-      <li>Charlie (manager): <code>tok_charlie_7g8h9i</code></li>
-    </ul>
-    <p>Endpoints: GET /api/profile/{id} | GET /api/users | GET /api/report</p>
-    </body></html>
-    """
+    return render_template("index.html")
 
 @app.route("/api/users")
 def list_users():
